@@ -5,6 +5,23 @@ const app=express()
 const customer=[]
 app.use(express.json())
 
+// middleware
+
+function verrifyAlreadyExists(request,response,next){
+    const {cpf}=request.headers
+    const index=customer.find(customer=>customer.cpf===cpf)
+    if(!index){
+        return response.status(404).json({message:"Customer not Founds !"}) 
+
+    }
+    request.index=index
+
+    next()
+
+
+
+}
+
 app.post("/account",(request,response)=>{
     const {cpf,name}=request.body
     const customerAlreadyExists=customer.some(customer=>customer.cpf===cpf)
@@ -24,14 +41,10 @@ app.post("/account",(request,response)=>{
 })
 
 
-app.get("/account/:cpf",(request,response)=>{
-    const {cpf}=request.params
+app.get("/account",verrifyAlreadyExists,(request,response)=>{
 
-    const index=customer.find(customer=>customer.cpf===cpf)
-
-    if(!index){
-        return response.status(404).json({message:"Customer not Founds !"})
-    }
+ const{index}=request
+   
 
 
     return response.json(index.statement)
