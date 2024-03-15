@@ -29,6 +29,10 @@ app.get("/account/:cpf",(request,response)=>{
 
     const index=customer.find(customer=>customer.cpf===cpf)
 
+    if(!index){
+        return response.status(404).json({message:"Customer not Founds !"})
+    }
+
 
     return response.json(index.statement)
 })
