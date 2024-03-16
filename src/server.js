@@ -2,19 +2,19 @@ import express, { response } from 'express'
 import { uuid } from 'uuidv4';
 const app=express()
 
-const customer=[]
+const customers=[]
 app.use(express.json())
 
 // middleware
 
 function verrifyAlreadyExists(request,response,next){
     const {cpf}=request.headers
-    const index=customer.find(customer=>customer.cpf===cpf)
-    if(!index){
+    const customer=customers.find(customer=>customer.cpf===cpf)
+    if(!customer){
         return response.status(404).json({message:"Customer not Founds !"}) 
 
     }
-    request.index=index
+    request.customer=customer
 
     next()
 
@@ -24,13 +24,13 @@ function verrifyAlreadyExists(request,response,next){
 
 app.post("/account",(request,response)=>{
     const {cpf,name}=request.body
-    const customerAlreadyExists=customer.some(customer=>customer.cpf===cpf)
+    const customerAlreadyExists=customers.some(customer=>customer.cpf===cpf)
 
     if(customerAlreadyExists){
         return response.status(400).json({message:"Customer already exists"})
     }
 
-    customer.push({
+    customers.push({
         id:uuid(),
         name,
         cpf,
@@ -43,11 +43,33 @@ app.post("/account",(request,response)=>{
 
 app.get("/account",verrifyAlreadyExists,(request,response)=>{
 
- const{index}=request
-   
+ const{customer}=request
 
-
-    return response.json(index.statement)
+    return response.json(customer.statement)
 })
+
+app.post("/deposit",verrifyAlreadyExists,(request,response)=>{
+
+
+    const {description,ammount}=request.body
+    
+    const {customer}=request
+
+
+
+    const statementOperation={
+        description,
+        ammount,
+        create_at:new Date(),
+        type:'credit'
+    }
+
+    customer.statement.push(statementOperation)
+
+    return response.status(201).send()
+
+
+
+}) 
 
 app.listen(3333)
